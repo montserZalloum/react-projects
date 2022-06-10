@@ -975,3 +975,23 @@ h5 {
 .no-wrap {
   white-space: nowrap;
 }
+
+.mui-input {
+  height: 56px;
+  padding: 16.5px 14px;
+  border-radius: 4px;
+  border-width: 1px;
+  border-color: rgba(0, 0, 0, 0.23);
+}
+.PhoneInput {
+  padding: 16.5px 14px;
+  border: 1px solid #c4c4c4;
+  border-radius: 4px;
+  height: 56px;
+}
+.PhoneInput input {
+  border: 0;
+}
+.form-group.not-valid .PhoneInput {
+  border-color: #ff0000;
+}

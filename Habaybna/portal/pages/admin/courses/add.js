@@ -6,82 +6,304 @@ import Button from "@mui/material/Button";
 
 import { useState } from "react";
 import { server } from "../../../config";
-import { useDispatch } from "react-redux";
 import { useRouter } from "next/router";
 import MultipleSelectChip from "../../../components/base/MultiSelect";
-import InputLabel from '@mui/material/InputLabel';
+import InputLabel from "@mui/material/InputLabel";
+
+import Radio from "@mui/material/Radio";
+import RadioGroup from "@mui/material/RadioGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import FormLabel from "@mui/material/FormLabel";
+import Loader from "../../../components/base/Loader";
+import Snackbar from "../../../components/base/Snackbar";
+import { useEffect } from "react";
+import axios from "axios";
+
 function add() {
-  const dispatch = useDispatch();
   const router = useRouter();
-
+  const [categories, setCategories] = useState([]);
+  const [specialistList, setSpecialistList] = useState([]);
   // loading & alert functions
-  const isLoading = (isLoad) => dispatch({ type: "LOADING", payload: isLoad });
-  const alert = (message, status) =>
-    dispatch({ type: "ALERT", payload: { message, status } });
-
+  const isLoading = (isLoad) => setLoading(isLoad);
+  const [loading, setLoading] = useState(false);
+  const [alert, setAlert] = useState({
+    isSuccess: false,
+    message: "",
+  });
   // define form inputs
   const [formData, setFormData] = useState({
-    name: "",
-    description: "",
+    courseTitle: "",
+    categories: [],
+    courseDescription: "",
+    whatShouldLearn: "",
+    coverImage: "",
+    introLink: "",
+    specialists: [],
+    isPublished: true,
+    isFree: false,
+    discount: 0,
+    price: 0,
   });
 
+  const alertFn = (isSuccess, message) => {
+    setAlert({
+      isSuccess,
+      message,
+    });
+  };
+  // get categories from API
+  useEffect(() => {
+    async function getCategories() {
+      const res = await fetch(`${server}/category`);
+      const data = await res.json();
+      setCategories(data);
+    }
+    async function getSpecialists() {
+      const res = await fetch(`${server}/user/type/specialist`);
+      const data = await res.json();
+      setSpecialistList(data.map((item) => ({
+        _id: item._id,
+        title: item.firstName + " " + item.lastName,
+      })))
+    }
+    getCategories();
+    getSpecialists();
+  }, []);
+  // handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
+    console.log(formData.courseTitle);
     isLoading(true);
-    // try {
-    //   const resp = await fetch(`${server}/taxonomy`, {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify(formData),
-    //   });
+    try {
 
-    //   if (!resp.ok) {
-    //     alert("Something went wrong", false);
-    //   } else {
-    //     alert("Successfully", true);
-    //     router.push("/taxonomy");
-    //   }
-    // } catch (error) {
-    //   alert(error.message, false);
-    // }
+      let form = new FormData();
+      form.append("courseTitle", formData.courseTitle);
+      form.append("categories", [formData.categories]);
+      form.append("courseDescription", formData.courseDescription);
+      form.append("whatShouldLearn", formData.whatShouldLearn);
+      form.append("coverImage", formData.coverImage);
+      form.append("introLink", formData.introLink);
+      form.append("specialists", [formData.specialists]);
+      form.append("isPublished", formData.isPublished);
+      form.append("isFree", formData.price == 0 || formData.isFree);
+      form.append("price", formData.price);
+      form.append("discount", formData.discount);
+      axios
+        .post(`${server}/course`, form)
+        .then((response) => {
+          if (response.status == 200) {
+            // this.$Message.success("Course Updated success");
+            this.success();
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          return 404;
+        });
+
+      if (!resp.ok) {
+        alertFn(false, "Something went wrong");
+      } else {
+        alertFn(true, "Course added successfully");
+        // router.push("/courses");
+      }
+    } catch (error) {
+      alertFn(false, "Something went wrong");
+    }
     isLoading(false);
   };
 
-  function handleChange(e) {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+  function handleChange(e, val) {
+    if (val && e?.target?.type != "radio") {
+      setFormData({
+        ...formData,
+        [e]: val,
+      });
+    } else if (e.target.type === "file") {
+      setFormData({
+        ...formData,
+        [e.target.name]: e.target.files[0],
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [e.target.name]: e.target.value,
+      });
+    }
+    console.log(formData);
+    // setCoverImage(e.target.files[0]);
   }
   return (
     <AdminLayout>
       <Card>
+        <Snackbar setAlert={setAlert} alert={alert} />
         <form onSubmit={handleSubmit}>
           <div className="d-flex gap-15">
-            <div className="form-group w-50 mb-15">
+            <div className="form-group w-50  mb-15">
+              <InputLabel>Course Title</InputLabel>
               <TextField
                 required
-                label="Course Name"
                 InputLabelProps={{ shrink: true }}
                 className="w-100"
-                name="courseName"
+                name="courseTitle"
                 onChange={handleChange}
-                value={formData.name}
+                value={formData.courseTitle}
               />
             </div>
             <div className="form-group w-50 mb-15">
-              <MultipleSelectChip />
+              <MultipleSelectChip
+                items={categories}
+                keyName={"categories"}
+                setItems={setFormData}
+                onChange={handleChange}
+                label="Course Category"
+                isRequired={true}
+              />
             </div>
           </div>
           <div className="form-group w-100 mb-15">
+            <TextField
+              required
+              multiline
+              rows={4}
+              label="Course Description"
+              InputLabelProps={{ shrink: true }}
+              className="w-100"
+              name="courseDescription"
+              onChange={handleChange}
+              value={formData.name}
+            />
+          </div>
+          <div className="form-group w-100 mb-15">
+            <TextField
+              required
+              multiline
+              rows={4}
+              label="What Should We Learn"
+              InputLabelProps={{ shrink: true }}
+              className="w-100"
+              name="whatShouldLearn"
+              onChange={handleChange}
+              value={formData.whatShouldLearn}
+            />
+          </div>
+
+          <div className="d-flex gap-15">
+            <div className="form-group w-50 mb-15">
+              <InputLabel id="demo-multiple-chip-label">
+                Course Cover Image
+              </InputLabel>
+              <input required onChange={handleChange} type="file" name="coverImage" />
+            </div>
+            <div className="form-group w-50 mb-15">
+              <TextField
+                required
+                label="Intro Video Link"
+                InputLabelProps={{ shrink: true }}
+                className="w-100"
+                name="introLink"
+                onChange={handleChange}
+                value={formData.introLink}
+              />
+            </div>
+          </div>
+          <div className="d-flex gap-15">
+            <div className="form-group w-50 mb-15">
+              <FormLabel id="demo-row-radio-buttons-group-label">
+                Course Status
+              </FormLabel>
+              <RadioGroup
+                row
+                aria-labelledby="demo-row-radio-buttons-group-label"
+                name="isPublished"
+                value={formData.isPublished}
+                onChange={handleChange}
+              >
+                <FormControlLabel
+                  value={true}
+                  control={<Radio />}
+                  label="Active"
+                />
+                <FormControlLabel
+                  value={false}
+                  control={<Radio />}
+                  label="Inactive"
+                />
+              </RadioGroup>
+            </div>
+            <div className="form-group w-50 mb-15">
+              <FormLabel id="demo-row-radio-buttons-group-label">
+                Course Type
+              </FormLabel>
+              <RadioGroup
+                row
+                aria-labelledby="demo-row-radio-buttons-group-label"
+                name="isFree"
+                value={formData.isFree}
+                onChange={handleChange}
+              >
+                <FormControlLabel
+                  value={true}
+                  control={<Radio />}
+                  label="Free"
+                />
+                <FormControlLabel
+                  value={false}
+                  control={<Radio />}
+                  label="Paid"
+                />
+              </RadioGroup>
+            </div>
+          </div>
+          <div className="d-flex gap-15">
+            <div className="form-group w-50 mb-15 d-flex flex-column">
+              <FormLabel id="demo-row-radio-buttons-group-label">
+                Course Price
+              </FormLabel>
+              <input
+                onChange={handleChange}
+                value={formData.price}
+                className="mui-input"
+                type="number"
+                name="price"
+                min="0"
+                required={formData.isFree ? false : true}
+              />
+            </div>
+            <div className="form-group w-50 mb-15 d-flex flex-column">
+              <FormLabel id="demo-row-radio-buttons-group-label">
+                Discount Percentage
+              </FormLabel>
+              <input
+                onChange={handleChange}
+                value={formData.discount}
+                className="mui-input"
+                type="number"
+                name="discount"
+                min="0"
+              />
+            </div>
+          </div>
+          <div className="d-flex gap-15">
+            <div className="form-group relative w-100 mb-15 d-flex flex-column">
+              <MultipleSelectChip
+                items={specialistList}
+                keyName={"specialists"}
+                setItems={setFormData}
+                onChange={handleChange}
+                label="Specialists"
+                isRequired={true}
+              />
+            </div>
+          </div>
+
+          <div className="form-group w-100 mb-15">
             <Button type="submit" variant="contained">
-              ADD TAXONOMY
+              Create
             </Button>
           </div>
         </form>
+        <Loader isLoading={loading} />
       </Card>
     </AdminLayout>
   );

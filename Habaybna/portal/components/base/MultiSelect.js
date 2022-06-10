@@ -1,82 +1,213 @@
 import * as React from 'react';
-import { useTheme } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import OutlinedInput from '@mui/material/OutlinedInput';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
-import Chip from '@mui/material/Chip';
-
-
-const names = [
-  'Oliver Hansen',
-  'Van Henry',
-  'April Tucker',
-  'Ralph Hubbard',
-  'Omar Alexander',
-  'Carlos Abbott',
-  'Miriam Wagner',
-  'Bradley Wilkerson',
-  'Virginia Andrews',
-  'Kelly Snyder',
-];
-
-function getStyles(name, personName, theme) {
-  return {
-    fontWeight:
-      personName.indexOf(name) === -1
-        ? theme.typography.fontWeightRegular
-        : theme.typography.fontWeightMedium,
+import PropTypes from 'prop-types';
+import { useAutocomplete } from '@mui/base/AutocompleteUnstyled';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import { styled } from '@mui/material/styles';
+import InputLabel from "@mui/material/InputLabel";
+const Root = styled('div')(
+  ({ theme }) => `
+  color: ${
+    theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.65)' : 'rgba(0,0,0,.85)'
   };
+  font-size: 14px;
+`,
+);
+
+// const Label = styled('label')`
+//   padding: 0 0 4px;
+//   line-height: 1.5;
+//   display: block;
+// `;
+
+const InputWrapper = styled('div')(
+  ({ theme }) => `
+  width: 100%;
+  border: 1px solid ${theme.palette.mode === 'dark' ? '#434343' : '#d9d9d9'};
+  background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#fff'};
+  border-radius: 4px;
+  padding: 1px;
+  display: flex;
+  flex-wrap: wrap;
+
+  &:hover {
+    border-color: ${theme.palette.mode === 'dark' ? '#177ddc' : '#40a9ff'};
+  }
+
+  &.focused {
+    border-color: ${theme.palette.mode === 'dark' ? '#177ddc' : '#40a9ff'};
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+  }
+
+  & input {
+    background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#fff'};
+    color: ${
+      theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.65)' : 'rgba(0,0,0,.85)'
+    };
+    height: 30px;
+    box-sizing: border-box;
+    padding: 4px 6px;
+    width: 0;
+    min-width: 30px;
+    flex-grow: 1;
+    border: 0;
+    margin: 0;
+    outline: 0;
+  }
+`,
+);
+
+function Tag(props) {
+  const { label, onDelete, ...other } = props;
+  return (
+    <div {...other}>
+      <span>{label}</span>
+      <CloseIcon onClick={onDelete} />
+    </div>
+  );
 }
 
-export default function MultipleSelectChip() {
-  const theme = useTheme();
-  const [personName, setPersonName] = React.useState([]);
+Tag.propTypes = {
+  label: PropTypes.string.isRequired,
+  onDelete: PropTypes.func.isRequired,
+};
 
-  const handleChange = (event) => {
-    const {
-      target: { value },
-    } = event;
-    setPersonName(
-      // On autofill we get a stringified value.
-      typeof value === 'string' ? value.split(',') : value,
-    );
+const StyledTag = styled(Tag)(
+  ({ theme }) => `
+  display: flex;
+  align-items: center;
+  height: 24px;
+  margin: 2px;
+  line-height: 22px;
+  background-color: ${
+    theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : '#fafafa'
   };
+  border: 1px solid ${theme.palette.mode === 'dark' ? '#303030' : '#e8e8e8'};
+  border-radius: 2px;
+  box-sizing: content-box;
+  padding: 0 4px 0 10px;
+  outline: 0;
+  overflow: hidden;
 
+  &:focus {
+    border-color: ${theme.palette.mode === 'dark' ? '#177ddc' : '#40a9ff'};
+    background-color: ${theme.palette.mode === 'dark' ? '#003b57' : '#e6f7ff'};
+  }
+
+  & span {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  & svg {
+    font-size: 22px;
+    cursor: pointer;
+    padding: 4px;
+  }
+`,
+);
+
+const Listbox = styled('ul')(
+  ({ theme }) => `
+  width: 300px;
+  margin: 2px 0 0;
+  padding: 0;
+  position: absolute;
+  list-style: none;
+  background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#fff'};
+  overflow: auto;
+  max-height: 250px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1;
+
+  & li {
+    padding: 5px 12px;
+    display: flex;
+
+    & span {
+      flex-grow: 1;
+    }
+
+    & svg {
+      color: transparent;
+    }
+  }
+
+  & li[aria-selected='true'] {
+    background-color: ${theme.palette.mode === 'dark' ? '#2b2b2b' : '#fafafa'};
+    font-weight: 600;
+
+    & svg {
+      color: #1890ff;
+    }
+  }
+
+  & li[data-focus='true'] {
+    background-color: ${theme.palette.mode === 'dark' ? '#003b57' : '#e6f7ff'};
+    cursor: pointer;
+
+    & svg {
+      color: currentColor;
+    }
+  }
+`,
+);
+
+export default function CustomizedHook(props) {
+  const [required, setRequired] = React.useState(props.isRequired);
+  const {
+    getRootProps,
+    getInputProps,
+    getTagProps,
+    getListboxProps,
+    getOptionProps,
+    groupedOptions,
+    value,
+    focused,
+    setAnchorEl,
+  } = useAutocomplete({
+    id: 'customized-hook-demo',
+    multiple: true,
+    options: props.items,
+    getOptionLabel: (option) => option.title,
+    onChange: (event, value) => {
+      // props
+      props.onChange(props.keyName, value.map(item => item._id));
+      if ((value.length === 0) && props.isRequired) {
+        setRequired(true);
+      } else {
+        setRequired(false);
+      }
+    }
+  });
+  // props.setItems(value);
   return (
-    <div className='w-100'>
-        <FormControl sx={{ m: 0, width: '100%' }}>
-        <InputLabel  id="demo-multiple-chip-label">Course Category</InputLabel>
-        <Select
-          labelId="demo-multiple-chip-label"
-          id="demo-multiple-chip"
-          
-          multiple
-          value={personName}
-          onChange={handleChange}
-          input={<OutlinedInput id="demo-multiple-chip-labels" label="Course Category" />}
-          fullWidth
-          renderValue={(selected) => (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-              {selected.map((value) => (
-                <Chip key={value} label={value} />
-              ))}
-            </Box>
-          )}
-        >
-          {names.map((name) => (
-            <MenuItem
-              key={name}
-              value={name}
-              style={getStyles(name, personName, theme)}
-            >
-              {name}
-            </MenuItem>
+    <Root>
+      <div {...getRootProps()}>
+        <InputLabel id="">
+                {props.label}
+        </InputLabel>
+        {/* <Label {...getInputLabelProps()}>Customized hook</Label> */}
+        <InputWrapper ref={setAnchorEl} className={focused ? 'focused' : ''}>
+          {value.map((option, index) => (
+            <StyledTag label={option.title} {...getTagProps({ index })} />
           ))}
-        </Select>
-        </FormControl>
-    </div>
+
+          <input required={props.isRequired && required}  {...getInputProps()} />
+        </InputWrapper>
+      </div>
+      {groupedOptions.length > 0 ? (
+        <Listbox {...getListboxProps()}>
+          {groupedOptions.map((option, index) => (
+            <li {...getOptionProps({ option, index })}>
+              <span>{option.title}</span>
+              <CheckIcon fontSize="small" />
+            </li>
+          ))}
+        </Listbox>
+      ) : null}
+    </Root>
   );
 }

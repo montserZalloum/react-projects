@@ -154,7 +154,7 @@ export default function DashboardContent({children}) {
               <ListItemText primary="Content" />
             </Link>
             <Divider sx={{ my: 1 }} />
-            <Link className="d-flex align-center underline-p" href="/users">
+            <Link className="d-flex align-center underline-p" href="/admin/users">
               <ListItemIcon>
                   <GroupIcon />
               </ListItemIcon>
