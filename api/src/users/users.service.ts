@@ -65,7 +65,9 @@ export class UserService {
     return user;
   }
 
-  // async findOne(username: string): Promise<User | undefined> {
-  //     return user.find(user => user.username == username)
-  // }
+  async loginUser(obj){
+    const user = await this.userModel.find({ email:obj.email, password: obj.password }).exec();
+    if (user.length == 0) throw new NotFoundException("Could not find User.");
+    return user[0];
+  }
 }

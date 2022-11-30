@@ -8,7 +8,6 @@ export class UsersController {
 
   @Post()
   async addUser(@Body() body: UserObj) {
-    console.log(body)
     const newUser = await this.userService.insertUser(body);
     return newUser;
   }
@@ -23,6 +22,10 @@ export class UsersController {
     return await this.userService.getUser(id);
   }
 
+  @Post("/login")
+  async loginUser(@Body() body: UserObj) {
+    return await this.userService.loginUser(body);
+  }
   @Get("/name/:name")
   async getUserByName(@Param("name") name: string) {
     return await this.userService.getUserByName(name);

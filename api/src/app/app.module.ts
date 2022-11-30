@@ -1,3 +1,5 @@
+import { OrdersModule } from './../orders/orders.module';
+import { CourseModule } from './../courses/course.module';
 import { Module } from "@nestjs/common";
 import { TaxonomyModule } from "../taxonomy/taxonomy.module";
 import { HomeModule } from "../home/home.module";
@@ -8,6 +10,7 @@ import { AuthModule } from "src/auth/auth.module";
 import { UsersModule } from "src/users/users.module";
 import { ConferencesModule } from "src/conferense/conference.module";
 import { GamesModule } from "src/games/games.module";
+import { BikesModule } from 'src/bikes/bikes.module';
 
 @Module({
   imports: [
@@ -17,9 +20,12 @@ import { GamesModule } from "src/games/games.module";
     HomeModule,
     ContentModule,
     UsersModule,
+    BikesModule,
     ConferencesModule,
     GamesModule,
-    MongooseModule.forRoot("mongodb://localhost:27017/aw-admin"),
+    CourseModule,
+    OrdersModule,
+    MongooseModule.forRoot("mongodb://localhost:27017/react"),
   ],
   controllers: [],
   providers: [],

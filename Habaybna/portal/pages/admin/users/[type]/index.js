@@ -24,10 +24,15 @@ export default function SimpleTable({ userType }) {
 
   useEffect(() => {
     async function fetchData() {
-      const data = await (
-        await fetch(`${server}/user/type/${userType}`)
-      ).json();
-      setUsersList(data);
+      try {
+        const data = await (
+          await fetch(`${server}/user/type/${userType}`)
+        ).json();
+        setUsersList(data);
+      } catch (error) {
+        console.log(error);
+        setUsersList([]);
+      }
     }
     fetchData();
   }, []);

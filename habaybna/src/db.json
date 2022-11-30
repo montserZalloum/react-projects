@@ -1,0 +1,60 @@
+{
+  "lessons": [
+    {
+      "name": "123",
+      "time": "10:21",
+      "courseID": "1",
+      "id": 1
+    },
+    {
+      "name": "lesson 1",
+      "courseID": "1",
+      "time": "10:21",
+      "id": 2
+    },
+    {
+      "name": "JAVA",
+      "courseID": "2",
+      "time": "10:21",
+      "id": 3
+    },
+    {
+      "name": "lesson 2",
+      "time": "10:21",
+      "courseID": "2",
+      "id": 4
+    }
+  ],
+  "courses": [
+    {
+      "name": "course 1",
+      "trailerLink": "https://www.youtube.com/embed/HbENb5l82Kg",
+      "id": 1
+    },
+    {
+      "name": "course 2",
+      "trailerLink": "https://www.youtube.com/embed/HbENb5l82Kg",
+      "id": 2
+    }
+  ],
+  "users": [
+    {
+      "name": "moon zalloum",
+      "id": 1
+    },
+    {
+      "name": "123",
+      "password": "123",
+      "id": 2
+    },
+    {
+      "name": "asd",
+      "password": "12",
+      "id": 3
+    },
+    {
+      "name": "xzc",
+      "id": 4
+    }
+  ]
+}
